@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Load admin info and navbar
 async function loadAdminNavbar() {
     try {
-        const res = await fetch("http://localhost:9654/api/admin/current");
+        const res = await fetch("https://smartsevajava.onrender.com/api/admin/current");
         const admin = await res.json();
         console.log("Admin fetched:", admin);
 
@@ -40,7 +40,7 @@ async function loadAdminNavbar() {
 
 async function loadAllComplaints() {
     try {
-        const res = await fetch("http://localhost:9654/api/complaints/all");
+        const res = await fetch("https://smartsevajava.onrender.com/api/complaints/all");
         const complaints = await res.json();
         console.log("complaints",complaints);
         console.log("images",complaints.imageUrl);
@@ -76,7 +76,7 @@ function renderComplaintsTable(complaints) {
             <td>${c.location}</td>
                         <td>
                 ${c.imageUrl 
-                    ? `<img src="http://localhost:9654/uploads/${c.imageUrl}" 
+                    ? `<img src="https://smartsevajava.onrender.com/uploads/${c.imageUrl}" 
                             alt="Complaint image"
                             style="height:90px;width:200px;object-fit:cover;border-radius:4px;">`
                     : "No image"}
@@ -102,7 +102,7 @@ function renderComplaintsTable(complaints) {
 // Update complaint status
 async function updateStatus(id, status) {
     try {
-        const res = await fetch(`http://localhost:9654/api/complaints/update-status/${id}`, {
+        const res = await fetch(`https://smartsevajava.onrender.com/api/complaints/update-status/${id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ status })
@@ -116,7 +116,7 @@ async function updateStatus(id, status) {
 
         // 🔥 If RESOLVED → send email
         if (status === "RESOLVED") {
-            await fetch(`http://localhost:9654/api/complaints/send-email/${id}`, {
+            await fetch(`https://smartsevajava.onrender.com/api/complaints/send-email/${id}`, {
                 method: "POST"
             });
         }
@@ -134,7 +134,7 @@ async function updateStatus(id, status) {
 async function filterComplaints(e) {
     const status = e.target.value;
     try {
-        const res = await fetch("http://localhost:9654/api/complaints/all");
+        const res = await fetch("https://smartsevajava.onrender.com/api/complaints/all");
         if (!res.ok) throw new Error("Failed to fetch complaints");
 
         let complaints = await res.json();
@@ -154,7 +154,7 @@ function setupAdminLogout() {
 
     btn.addEventListener("click", async () => {
         try {
-            await fetch("http://localhost:9654/api/admin/logout", { method: "POST" });
+            await fetch("https://smartsevajava.onrender.com/api/admin/logout", { method: "POST" });
             window.location.href = "adminlogin.html";
         } catch (err) {
             console.error("Logout failed:", err);

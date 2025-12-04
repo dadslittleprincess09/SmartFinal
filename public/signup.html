@@ -141,7 +141,7 @@ async function handleGoogleSignup(response) {
         email: payload.email
     };
 
-    const res = await fetch("http://localhost:9654/api/user/google-auth", {
+    const res = await fetch("https://smartsevajava.onrender.com/api/user/google-auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -418,7 +418,7 @@ async function handleGoogleSignup(response) {
     };
 
     try {
-        const res = await fetch("http://localhost:9654/api/user/register", {
+        const res = await fetch("https://smartsevajava.onrender.com/api/user/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)

@@ -500,7 +500,7 @@ async function loadNavbarAuth() {
   const avatarEl    = document.getElementById("navUserAvatar");
 
   try {
-    const res = await fetch("http://localhost:9654/api/user/current", {
+    const res = await fetch("https://smartsevajava.onrender.com/api/user/current", {
       credentials: "include"
     });
 
@@ -528,7 +528,7 @@ async function loadNavbarAuth() {
 
 // LOGOUT (backend session)
 document.getElementById("btnNavLogout")?.addEventListener("click", async () => {
-  await fetch("http://localhost:9654/api/user/logout", {
+  await fetch("https://smartsevajava.onrender.com/api/user/logout", {
     method: "POST",
     credentials: "include"
   });
@@ -580,7 +580,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 1️⃣ CHECK USER LOGIN STATUS
   let user = null;
   try {
-    const res = await fetch("http://localhost:9654/api/user/current", {
+    const res = await fetch("https://smartsevajava.onrender.com/api/user/current", {
       credentials: "include",
     });
 

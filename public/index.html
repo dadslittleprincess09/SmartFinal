@@ -910,7 +910,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    const response = await fetch("http://localhost:9654/api/user/current", {
+    const response = await fetch("https://smartsevajava.onrender.com/api/user/current", {
       credentials: "include"
     });
     
@@ -934,7 +934,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (btnLogout) {
     btnLogout.addEventListener("click", async () => {
       try {
-        const res = await fetch("http://localhost:9654/api/user/logout", {
+        const res = await fetch("https://smartsevajava.onrender.com/api/user/logout", {
           method: "POST",
           credentials: "include"
         });

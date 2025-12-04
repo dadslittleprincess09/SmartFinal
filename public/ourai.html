@@ -228,19 +228,6 @@
 
       <!-- RIGHT: language + auth -->
       <div class="d-flex align-items-center gap-2 ms-md-0 ms-auto">
-
-        <!-- Language dropdown -->
-        <!-- <div class="dropdown">
-          <button class="btn btn-light border dropdown-toggle py-1 px-2"
-                  id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            Language
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
-            <li><button class="dropdown-item" type="button">English</button></li>
-            <li><button class="dropdown-item" type="button">हिंदी</button></li>
-            <li><button class="dropdown-item" type="button">తెలుగు</button></li>
-          </ul>
-        </div> -->
        <!-- AUTH AREA -->
       <div class="ms-1">
 
@@ -271,7 +258,7 @@
 
     <ul class="dropdown-menu dropdown-menu-end">
       <li><a class="dropdown-item" href="profile.html">Profile</a></li>
-      <li><a class="dropdown-item" href="dashboard.html">My Grievances</a></li>
+      <li><a class="dropdown-item" href="dashboard.html">My Complaints</a></li>
       <li><hr class="dropdown-divider"></li>
       <li><button class="dropdown-item text-danger" id="btnNavLogout">Logout</button></li>
     </ul>
@@ -294,8 +281,11 @@
     </div>
   </div>
 </div>
-    <main class="flex-grow-1">
+    <main class="flex-grow-1 bg-white">
      <!-- =============== AI HERO (shown first) =============== -->
+      <div id="lowSeverityMessage" class="alert alert-warning mt-3 d-none " style="border-radius: 10px;">
+      </div>
+
       <section id="ai-hero" class="py-5">
         <div class="container ai-hero-inner">
           <div class="row align-items-center g-4">
@@ -493,10 +483,7 @@
   </div>
 </div>
 
-            <!-- <p class="small text-muted mt-2">
-              Demo view: how SmartSeva AI reads complaints, identifies risk, and
-              suggests priority.
-            </p> -->
+           
           </div>
         </div>
       </section>
@@ -617,7 +604,7 @@ const predictSection = document.getElementById("ai-predict-section");
 const btnTryModel = document.getElementById("btnTryModel");
 async function checkLogin() {
   try {
-    const resp = await fetch("http://localhost:9654/api/user/current", {
+    const resp = await fetch("https://smartsevajava.onrender.com/api/user/current", {
       credentials: "include"
     });
 
@@ -775,10 +762,11 @@ const aiResultContent = document.getElementById("aiResultContent");
 const categoryError = document.getElementById("categoryError");
 const categoryEl = document.getElementById("category");
 
+
 if (btnPredict && aiResultBox && aiResultContent) {
   btnPredict.addEventListener("click", async () => {
     let file = photoInput.files[0];
-    if (!file && previewImg.src.startsWith("data:image")) {
+    if (!file && previewImg.src && previewImg.src.startsWith("data:image")) {
       const response = await fetch(previewImg.src);
       const blob = await response.blob();
       file = new File([blob], "captured.png", { type: "image/png" });
@@ -795,73 +783,72 @@ if (btnPredict && aiResultBox && aiResultContent) {
     aiResultContent.innerHTML = "⏳ Processing image... please wait.";
 
     try {
-      const resp = await fetch("http://localhost:9654/api/predict", {
+      const resp = await fetch("https://smartsevajava.onrender.com/api/predict", {
         method: "POST",
         body: formData
       });
+
+      if (!resp.ok) {
+        // show backend error text if available
+        const text = await resp.text();
+        throw new Error(text || `Server returned ${resp.status}`);
+      }
+
       const data = await resp.json();
 
-      const main = data.main_output;
-      const severity = data.severity_output;
+      // ---- NEW: use direct category/severity strings returned by backend ----
+      aiPredictedCategory = data.category || null;   // e.g. "Road"
+      aiPredictedSeverity = data.severity || null;   // e.g. "Medium"
 
-      const mainMaxIndex = main.indexOf(Math.max(...main));
-      const severityMaxIndex = severity.indexOf(Math.max(...severity));
+      // Enable submit when we have a predicted severity
+      if (btnSubmitComplaint) btnSubmitComplaint.disabled = !aiPredictedSeverity;
 
-      const mainLabels = ["Garbage", "Road Issue", "Drainage Issue"];
-      const severityLabels = ["Very Low",
-  "Low",
-  "Medium",
-  "High",
-  "Very High",
-  "Critical"];
+      // Map AI category labels to your dropdown values for comparison
+      const aiToDropdownMap = {
+        "Road": "Road Issue",
+        "Child": "Child Labour",
+        "Garbage": "Drainage Issue"
+      };
 
-      aiPredictedCategory = mainLabels[mainMaxIndex];
-      aiPredictedSeverity = severityLabels[severityMaxIndex]; // <-- NEW
+      const mappedAiCategory = aiToDropdownMap[aiPredictedCategory] || aiPredictedCategory;
 
       const userSelectedCategory = categoryEl.value;
 
-      if (btnSubmitComplaint) btnSubmitComplaint.disabled = false;
-
+      // Show/hide category mismatch error
       if (categoryError) {
-        if (aiPredictedCategory === userSelectedCategory) categoryError.classList.add("d-none");
-        else categoryError.classList.remove("d-none");
+        if (userSelectedCategory && mappedAiCategory === userSelectedCategory) {
+          categoryError.classList.add("d-none");
+        } else {
+          // if user hasn't selected category yet, hide error (let them pick)
+          if (!userSelectedCategory) categoryError.classList.add("d-none");
+          else categoryError.classList.remove("d-none");
+        }
       }
 
-    aiResultContent.innerHTML = `
-  <div class="ai-result-card">
-      <div class="ai-result-title">
-        
-      </div>
+      // Build UI output (safe, avoid old array logic)
+      aiResultContent.innerHTML = `
+        <div class="ai-result-card">
+          <div class="ai-result-item">
+            <b>Category:</b> <span>${aiPredictedCategory || 'Unknown'}</span>
+          </div>
+          <div class="ai-result-item">
+            <b>Severity:</b> <span>${aiPredictedSeverity || 'Unknown'}</span>
+          </div>
+          <div class="ai-result-item mt-2">
+            ${ (userSelectedCategory && mappedAiCategory === userSelectedCategory)
+                ? '<span style="color: green;">✅ Category matches your selection</span>'
+                : (userSelectedCategory ? '<span style="color: orange;">⚠️ Category differs from your selection</span>' : '<span class="text-muted">Select category to compare</span>')
+            }
+          </div>
+        </div>
+      `;
 
-      <div class="ai-result-item">
-        <b>Category:</b> 
-        <span>${aiPredictedCategory}</span>
-        <span class="text-muted small">(${(main[mainMaxIndex] * 100).toFixed(2)}%)</span>
-      </div>
-
-      <div class="ai-result-item">
-        <b>Severity:</b> 
-        <span class="
-          ${aiPredictedSeverity === 'High' ? 'severity-high' : ''} 
-          ${aiPredictedSeverity === 'Medium' ? 'severity-medium' : ''} 
-          ${aiPredictedSeverity === 'Low' ? 'severity-low' : ''}
-        ">
-          ${aiPredictedSeverity}
-        </span>
-        <span class="text-muted small">(${(severity[severityMaxIndex] * 100).toFixed(2)}%)</span>
-      </div>
-
-      <div class="ai-result-item mt-2">
-        ${aiPredictedCategory === userSelectedCategory 
-          ? '<span style="color: green;">✅ Category matches your selection</span>'
-          : '<span style="color: orange;">⚠️ Category differs from your selection</span>'}
-      </div>
-  </div>
-`;
-    }catch (err) {
-      aiResultContent.innerHTML = `<span class="text-danger">❌ Error: Could not connect to backend.<br>${err}</span>`;
+    } catch (err) {
+      console.error("Predict error:", err);
+      aiResultContent.innerHTML = `<span class="text-danger">❌ Error: Could not connect to backend.<br>${err.message || err}</span>`;
       aiPredictedCategory = null;
       aiPredictedSeverity = null;
+      if (btnSubmitComplaint) btnSubmitComplaint.disabled = true;
     }
   });
 }
@@ -888,12 +875,22 @@ if (complaintForm) {
     if (!location) { alert("Please enter a location."); return; }
     if (!aiPredictedSeverity) { alert("Please get AI severity prediction first."); return; } // <-- NEW
 
-    if (aiPredictedCategory && userCategory !== aiPredictedCategory) {
-        alert(
-    `Warning: Your selected category (${userCategory}) doesn't match the AI prediction (${aiPredictedCategory}).`
-  );
-  return; 
-    }
+// FIX: map AI category value
+const aiToDropdownMap = {
+  "Road": "Road Issue",
+  "Child": "Child Labour",
+  "Garbage": "Drainage Issue"
+};
+const mappedAiCategory = aiToDropdownMap[aiPredictedCategory] || aiPredictedCategory;
+
+// category mismatch check
+if (aiPredictedCategory && userCategory !== mappedAiCategory) {
+  alert(`Warning: Your selected category (${userCategory}) doesn't match the AI prediction (${aiPredictedCategory}).`);
+  return;
+}
+
+
+
 
 
     // ====== Submit complaint ======
@@ -912,7 +909,7 @@ try {
     formData.append("image", blob, "captured.png");
   }
 
-  const response = await fetch("http://localhost:9654/api/complaints/add", {
+  const response = await fetch("https://smartsevajava.onrender.com/api/complaints/add", {
     method: "POST",
     body: formData,
     credentials: "include",
@@ -936,7 +933,16 @@ try {
   }
 } catch (error) {
   console.error("Error submitting complaint:", error);
-  alert("Error submitting complaint. Please try again.");
+  // alert("Error submitting complaint. Please try again.");
+ const msgBox = document.getElementById("lowSeverityMessage");
+msgBox.innerHTML = `
+  <strong>⚠️ Submission Not Allowed</strong><br>
+  We’re sorry, but this issue has been identified as <b>Low Severity</b> by SmartSeva AI.<br>
+  Please try uploading a clearer photo or provide more details, so we can help you more effectively. 
+`;
+msgBox.classList.remove("d-none");
+msgBox.scrollIntoView({ behavior: "smooth", block: "center" });
+
 }
 
   });
