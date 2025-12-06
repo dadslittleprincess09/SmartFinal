@@ -3,7 +3,7 @@
 // =========================
 async function loadUserDashboard() {
   try {
-    const res = await fetch("https://smartsevajava.onrender.com/api/user/current", {
+    const res = await fetch("http://localhost:9654/api/user/current", {
       credentials: "include"
     });
 
@@ -23,7 +23,7 @@ async function loadUserDashboard() {
 // =========================
 async function loadMyComplaints() {
   try {
-    const res = await fetch("https://smartsevajava.onrender.com/api/complaints/my", {
+    const res = await fetch("http://localhost:9654/api/complaints/my", {
       credentials: "include",
     });
 
@@ -78,7 +78,7 @@ function renderProgressComplaints(list) {
   // Match exact backend value
   const filtered = list.filter(c => c.status === "SEND TO DEPT");
 
-  console.log("Progress complaints:", filtered);
+
 
   tbody.innerHTML = filtered.map(rowTemplate).join("");
 }
@@ -100,7 +100,7 @@ function renderResolvedComplaints(list) {
         <td>${c.location}</td>
         <td>
         ${c.imageUrl 
-          ? `<img src="https://smartsevajava.onrender.com/uploads/${c.imageUrl}" 
+          ? `<img src="http://localhost:9654/uploads/${c.imageUrl}" 
                  style="height:90px;width:200px;object-fit:cover;border-radius:6px;">`
           : "No Image"}
       </td>
@@ -127,7 +127,7 @@ function rowTemplate(c) {
       <td>${c.location}</td>
       <td>
         ${c.imageUrl 
-          ? `<img src="https://smartsevajava.onrender.com/uploads/${c.imageUrl}" 
+          ? `<img src="http://localhost:9654/uploads/${c.imageUrl}" 
                  style="height:90px;width:200px;object-fit:cover;border-radius:6px;">`
           : "No Image"}
       </td>

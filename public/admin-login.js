@@ -1,10 +1,7 @@
 function showToast(message, type = "success") {
     const toastEl = document.getElementById("loginToast");
     const toastBody = toastEl.querySelector(".toast-body");
-
-    // Remove old classes
     toastEl.classList.remove("toast-success", "toast-error", "toast-warning");
-
     // Apply type-based color
     if (type === "success") toastEl.classList.add("toast-success");
     if (type === "error") toastEl.classList.add("toast-error");
@@ -33,7 +30,7 @@ document.getElementById("adminForm").addEventListener("submit", async function (
     };
 
     try {
-        const res = await fetch("https://smartsevajava.onrender.com/api/admin/login", {
+        const res = await fetch("http://localhost:9654/api/admin/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

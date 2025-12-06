@@ -390,19 +390,17 @@
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      const res = await fetch("https://smartsevajava.onrender.com/api/user/current", {
+      const res = await fetch("http://localhost:9654/api/user/current", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: "include"
       });
-
 
       const data = await res.json();
       console.log("Fetched user:", data);
 
       // 👇 IMPORTANT: Your real user object is inside data.user
       const user = data.user;
-
       const name = user.name || "SmartSeva User";
       const email = user.email || "Not available";
       const initial = name.trim().charAt(0).toUpperCase();
